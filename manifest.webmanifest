@@ -1,0 +1,23 @@
+{
+  "name": "Sekond’s Modified Information Magister",
+  "short_name": "SMIM",
+  "description": "Sekond’s Modified Information Magister",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e7e9ec",
+  "theme_color": "#315f8d",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,4881 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<script src="errors.js" defer></script>
+<script src="auth.js" defer></script>
+<script src="magister.js" defer></script>
+<script src="app.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#315f8d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SMIM">
+
+<link rel="manifest" href="manifest.webmanifest">
+
+<title>SMIM — Sekond’s Modified Information Magister</title>
+
+<style>
+*{box-sizing:border-box}
+
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:13px;
+    color:#222;
+    background:#e7e9ec;
+}
+
+button,input,select{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+    border:1px solid #9ba4ad;
+    background:linear-gradient(#fff,#e5e7e9);
+    padding:5px 9px;
+    border-radius:2px;
+    color:#222;
+}
+
+button:hover{
+    background:#dce8f4;
+}
+
+button:active{
+    background:#c9d8e7;
+}
+
+button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+:root{
+    --blue:#315f8d;
+    --blue-dark:#254b70;
+    --blue-light:#dce8f4;
+
+    --bg:#e7e9ec;
+    --panel:#f7f7f7;
+    --white:#fff;
+
+    --border:#aeb6bf;
+    --border-light:#cdd2d7;
+
+    --text:#222;
+    --muted:#69747d;
+
+    --green:#287844;
+    --red:#a43737;
+    --yellow:#8a6500;
+
+    --sidebar-width:190px;
+    --topbar-height:48px;
+    --bottom-nav-height:58px;
+}
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.topbar{
+    height:var(--topbar-height);
+    background:linear-gradient(#3e719f,#2c547b);
+    color:#fff;
+
+    display:flex;
+    align-items:center;
+
+    padding:
+        env(safe-area-inset-top)
+        10px
+        0
+        10px;
+
+    border-bottom:1px solid #203e5a;
+    box-shadow:0 1px 3px #777;
+
+    position:sticky;
+    top:0;
+    z-index:50;
+}
+
+.logo{
+    width:215px;
+    flex-shrink:0;
+
+    font-size:19px;
+    font-weight:bold;
+}
+
+.logo small{
+    display:block;
+    font-size:10px;
+    font-weight:normal;
+    opacity:.85;
+}
+
+.top-actions{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    flex:1;
+}
+
+.top-actions input{
+    height:28px;
+    width:300px;
+
+    border:1px solid #1e405e;
+    padding:4px 8px;
+}
+
+.profile-button{
+    margin-left:auto;
+
+    display:flex;
+    align-items:center;
+    gap:7px;
+
+    background:rgba(255,255,255,.12);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.25);
+}
+
+/* =========================================================
+   MAIN LAYOUT
+   ========================================================= */
+
+.layout{
+    display:flex;
+    min-height:calc(100vh - var(--topbar-height));
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.sidebar{
+    width:var(--sidebar-width);
+    flex-shrink:0;
+
+    background:#d8dce0;
+    border-right:1px solid #9fa6ad;
+
+    padding:7px 5px;
+
+    overflow-y:auto;
+
+    position:sticky;
+    top:var(--topbar-height);
+    height:calc(100vh - var(--topbar-height));
+}
+
+.side-section{
+    font-size:10px;
+    color:#59636c;
+    font-weight:bold;
+    text-transform:uppercase;
+
+    padding:8px 7px 4px;
+}
+
+.nav-btn{
+    width:100%;
+    text-align:left;
+
+    border:1px solid transparent;
+    background:transparent;
+
+    padding:7px 9px;
+    margin-bottom:1px;
+}
+
+.nav-btn:hover{
+    background:#edf1f4;
+    border-color:#b7bec5;
+}
+
+.nav-btn.active{
+    background:#fff;
+    border-color:#9fa8b1;
+
+    box-shadow:inset 3px 0 var(--blue);
+
+    font-weight:bold;
+}
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
+
+.main{
+    flex:1;
+    min-width:0;
+
+    padding:10px;
+
+    overflow-x:hidden;
+}
+
+.page-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    gap:10px;
+
+    margin-bottom:8px;
+}
+
+.page-title{
+    font-size:20px;
+    color:#263b4d;
+    font-weight:bold;
+}
+
+.page-subtitle{
+    color:#68747e;
+    font-size:11px;
+    margin-top:2px;
+}
+
+.toolbar{
+    display:flex;
+    gap:4px;
+    flex-wrap:wrap;
+}
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.columns{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+
+    margin-bottom:8px;
+}
+
+.columns.three{
+    grid-template-columns:repeat(3,1fr);
+}
+
+.panel{
+    background:var(--panel);
+
+    border:1px solid var(--border);
+
+    box-shadow:0 1px 2px rgba(0,0,0,.08);
+
+    margin-bottom:8px;
+}
+
+.panel-title{
+    min-height:32px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:5px 8px;
+
+    background:linear-gradient(#fafafa,#e2e5e8);
+
+    border-bottom:1px solid var(--border-light);
+
+    font-weight:bold;
+    color:#30485d;
+}
+
+.panel-actions{
+    display:flex;
+    gap:3px;
+}
+
+.panel-body{
+    padding:7px;
+}
+
+.panel.collapsed .panel-body{
+    display:none;
+}
+
+/* =========================================================
+   TABLES
+   ========================================================= */
+
+.table-wrap{
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+}
+
+table{
+    width:100%;
+    min-width:500px;
+
+    border-collapse:collapse;
+    background:#fff;
+}
+
+th{
+    text-align:left;
+
+    background:#e1e5e8;
+
+    border:1px solid #c0c6cb;
+
+    padding:5px 6px;
+
+    white-space:nowrap;
+}
+
+td{
+    border:1px solid #d0d4d8;
+
+    padding:5px 6px;
+
+    vertical-align:middle;
+}
+
+tbody tr:hover{
+    background:#e8f0f8;
+}
+
+.clickable{
+    cursor:pointer;
+}
+
+/* =========================================================
+   STATS
+   ========================================================= */
+
+.stat{
+    border:1px solid var(--border);
+    background:#fff;
+    padding:8px;
+}
+
+.stat-title{
+    font-size:11px;
+    color:#68747d;
+}
+
+.stat-value{
+    font-size:22px;
+    font-weight:bold;
+    color:var(--blue);
+
+    margin-top:2px;
+}
+
+.stat-detail{
+    font-size:10px;
+    color:#747b80;
+}
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+.badge{
+    display:inline-block;
+
+    padding:2px 6px;
+
+    border:1px solid #adb5bc;
+    background:#e8eaec;
+
+    font-size:11px;
+
+    border-radius:2px;
+
+    white-space:nowrap;
+}
+
+.badge.green{
+    background:#dcefe1;
+    border-color:#9bc0a3;
+    color:#236337;
+}
+
+.badge.red{
+    background:#f2dede;
+    border-color:#d1a3a3;
+    color:#8d2929;
+}
+
+.badge.yellow{
+    background:#f5edcf;
+    border-color:#d7c78d;
+    color:#745a00;
+}
+
+.badge.blue{
+    background:#dce9f6;
+    border-color:#a9bfd4;
+    color:#28557e;
+}
+
+/* =========================================================
+   AVATARS
+   ========================================================= */
+
+.pfp{
+    width:30px;
+    height:30px;
+
+    border-radius:3px;
+
+    background:linear-gradient(#6d8fad,#3d5e7c);
+
+    color:#fff;
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    font-weight:bold;
+    font-size:11px;
+
+    flex-shrink:0;
+
+    border:1px solid #304d67;
+}
+
+.pfp.big{
+    width:72px;
+    height:72px;
+
+    font-size:23px;
+}
+
+.user-cell{
+    display:flex;
+    align-items:center;
+    gap:7px;
+}
+
+.user-name{
+    font-weight:bold;
+}
+
+.user-sub{
+    font-size:10px;
+    color:#6d757c;
+}
+
+/* =========================================================
+   DETAIL GRID
+   ========================================================= */
+
+.detail-grid{
+    display:grid;
+    grid-template-columns:150px 1fr;
+
+    border:1px solid #ccd1d5;
+    background:#fff;
+}
+
+.detail-grid div{
+    padding:6px;
+
+    border-bottom:1px solid #d7dade;
+}
+
+.detail-grid .label{
+    background:#e8ebed;
+
+    font-weight:bold;
+    color:#53606b;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal-bg{
+    position:fixed;
+    inset:0;
+
+    background:rgba(0,0,0,.35);
+
+    z-index:100;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:20px;
+}
+
+.modal{
+    width:min(760px,100%);
+    max-height:90vh;
+
+    overflow:auto;
+
+    background:#f4f4f4;
+
+    border:1px solid #737b82;
+
+    box-shadow:0 4px 18px rgba(0,0,0,.35);
+}
+
+.modal-head{
+    background:linear-gradient(#fafafa,#dfe2e5);
+
+    border-bottom:1px solid #afb6bc;
+
+    padding:7px 9px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    font-weight:bold;
+    color:#30485d;
+
+    position:sticky;
+    top:0;
+    z-index:2;
+}
+
+.modal-body{
+    padding:10px;
+}
+
+.modal-foot{
+    border-top:1px solid #c2c6ca;
+
+    padding:7px;
+
+    text-align:right;
+
+    background:#e9ebed;
+
+    position:sticky;
+    bottom:0;
+}
+
+/* =========================================================
+   MOBILE BOTTOM NAV
+   ========================================================= */
+
+.mobile-nav{
+    display:none;
+}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.search-results{
+    margin-top:8px;
+}
+
+.result{
+    background:#fff;
+
+    border:1px solid #c8cdd1;
+
+    padding:7px;
+
+    margin-bottom:4px;
+
+    cursor:pointer;
+}
+
+.result:hover{
+    background:#edf4fa;
+}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+.setting{
+    display:flex;
+
+    justify-content:space-between;
+    align-items:center;
+
+    gap:15px;
+
+    border-bottom:1px solid #ddd;
+
+    padding:9px 3px;
+}
+
+.setting:last-child{
+    border-bottom:0;
+}
+
+.setting-name{
+    font-weight:bold;
+}
+
+.setting-desc{
+    font-size:11px;
+    color:#70777c;
+
+    margin-top:2px;
+}
+
+/* =========================================================
+   ULTRAWIDE
+   ========================================================= */
+
+@media(min-width:1600px){
+
+    .main{
+        max-width:1800px;
+        margin:auto;
+        width:100%;
+    }
+
+    .columns.three{
+        grid-template-columns:repeat(6,1fr);
+    }
+
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media(max-width:900px){
+
+    .sidebar{
+        width:65px;
+    }
+
+    .side-section{
+        display:none;
+    }
+
+    .nav-btn{
+        font-size:0;
+        text-align:center;
+        padding:10px 2px;
+    }
+
+    .nav-btn::first-letter{
+        font-size:17px;
+    }
+
+    .logo{
+        width:110px;
+    }
+
+    .logo small{
+        display:none;
+    }
+
+    .top-actions input{
+        width:220px;
+    }
+
+    .columns.three{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+/* =========================================================
+   PHONE
+   ========================================================= */
+
+@media(max-width:650px){
+
+    :root{
+        --topbar-height:54px;
+    }
+
+    body{
+        padding-bottom:calc(
+            var(--bottom-nav-height)
+            + env(safe-area-inset-bottom)
+        );
+    }
+
+    .topbar{
+        height:var(--topbar-height);
+
+        padding-left:
+            max(7px,env(safe-area-inset-left));
+
+        padding-right:
+            max(7px,env(safe-area-inset-right));
+    }
+
+    .logo{
+        width:62px;
+        font-size:18px;
+    }
+
+    .top-actions{
+        min-width:0;
+    }
+
+    .top-actions input{
+        width:100%;
+        min-width:0;
+    }
+
+    .top-actions button{
+        display:none;
+    }
+
+    .profile-button{
+        margin-left:4px;
+        padding:3px;
+    }
+
+    .profile-button span:last-child{
+        display:none;
+    }
+
+    .sidebar{
+        display:none;
+    }
+
+    .layout{
+        min-height:calc(100vh - var(--topbar-height));
+    }
+
+    .main{
+        padding:7px;
+
+        padding-left:
+            max(7px,env(safe-area-inset-left));
+
+        padding-right:
+            max(7px,env(safe-area-inset-right));
+    }
+
+    .page-head{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .page-title{
+        font-size:18px;
+    }
+
+    .toolbar{
+        width:100%;
+    }
+
+    .toolbar button,
+    .toolbar select{
+        flex:1;
+    }
+
+    .columns,
+    .columns.three{
+        grid-template-columns:1fr;
+    }
+
+    .stat{
+        min-height:72px;
+    }
+
+    .panel-title{
+        min-height:36px;
+    }
+
+    .panel-body{
+        padding:5px;
+    }
+
+    .detail-grid{
+        grid-template-columns:110px 1fr;
+    }
+
+    .modal-bg{
+        padding:8px;
+        align-items:flex-end;
+    }
+
+    .modal{
+        max-height:92vh;
+        width:100%;
+    }
+
+    .mobile-nav{
+        position:fixed;
+
+        display:grid;
+        grid-template-columns:repeat(5,1fr);
+
+        left:0;
+        right:0;
+        bottom:0;
+
+        height:var(--bottom-nav-height);
+
+        padding-bottom:env(safe-area-inset-bottom);
+
+        background:#e0e3e6;
+
+        border-top:1px solid #969da4;
+
+        z-index:60;
+
+        box-shadow:0 -2px 5px rgba(0,0,0,.12);
+    }
+
+    .mobile-nav button{
+        border:0;
+        border-radius:0;
+
+        background:transparent;
+
+        padding:4px 2px;
+
+        font-size:10px;
+
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+
+        gap:2px;
+    }
+
+    .mobile-nav button.active{
+        background:#fff;
+        box-shadow:inset 0 3px var(--blue);
+        font-weight:bold;
+    }
+
+    .mobile-icon{
+        font-size:17px;
+    }
+
+    table{
+        min-width:620px;
+    }
+
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media(max-width:380px){
+
+    .logo{
+        width:50px;
+        font-size:16px;
+    }
+
+    .pfp{
+        width:27px;
+        height:27px;
+    }
+
+    .top-actions input{
+        font-size:12px;
+    }
+
+    .mobile-nav button{
+        font-size:9px;
+    }
+
+    .mobile-icon{
+        font-size:15px;
+    }
+
+}
+
+/* =========================================================
+   LANDSCAPE PHONE
+   ========================================================= */
+
+@media(max-width:900px) and (orientation:landscape){
+
+    .mobile-nav{
+        height:48px;
+    }
+
+    body{
+        padding-bottom:48px;
+    }
+
+    .columns.three{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .columns{
+        grid-template-columns:1fr 1fr;
+    }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media(prefers-reduced-motion:reduce){
+    *{
+        scroll-behavior:auto!important;
+        transition:none!important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="logo">
+        SMIM
+        <small>Sekond’s Modified Information Magister</small>
+    </div>
+
+    <div class="top-actions">
+
+        <input
+            id="globalSearch"
+            type="search"
+            autocomplete="off"
+            placeholder="Search..."
+            oninput="handleSearch(this.value)"
+        >
+
+        <button onclick="go('overview')">Home</button>
+        <button onclick="goBack()">←</button>
+        <button onclick="goForward()">→</button>
+
+    </div>
+
+    <button class="profile-button" onclick="openStudentProfile()">
+        <span class="pfp">TI</span>
+        <span>Tijn</span>
+    </button>
+
+</header>
+
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="side-section">Main</div>
+
+        <button class="nav-btn active"
+                data-page="overview"
+                onclick="go('overview')">
+            ▣ Overview
+        </button>
+
+        <button class="nav-btn"
+                data-page="schedule"
+                onclick="go('schedule')">
+            ▤ Schedule
+        </button>
+
+        <button class="nav-btn"
+                data-page="grades"
+                onclick="go('grades')">
+            ◆ Grades
+        </button>
+
+        <button class="nav-btn"
+                data-page="homework"
+                onclick="go('homework')">
+            ✓ Homework
+        </button>
+
+        <button class="nav-btn"
+                data-page="tests"
+                onclick="go('tests')">
+            ▦ Tests
+        </button>
+
+
+        <div class="side-section">School</div>
+
+        <button class="nav-btn"
+                data-page="attendance"
+                onclick="go('attendance')">
+            ◷ Attendance
+        </button>
+
+        <button class="nav-btn"
+                data-page="messages"
+                onclick="go('messages')">
+            ✉ Messages
+        </button>
+
+        <button class="nav-btn"
+                data-page="documents"
+                onclick="go('documents')">
+            ▤ Documents
+        </button>
+
+        <button class="nav-btn"
+                data-page="people"
+                onclick="go('people')">
+            ♟ People
+        </button>
+
+
+        <div class="side-section">System</div>
+
+        <button class="nav-btn"
+                data-page="settings"
+                onclick="go('settings')">
+            ⚙ Settings
+        </button>
+
+    </aside>
+
+
+    <main id="app" class="main"></main>
+
+</div>
+
+
+<!-- MOBILE NAVIGATION -->
+
+<nav id="mobileNav" class="mobile-nav">
+
+    <button data-page="overview"
+            onclick="go('overview')">
+        <span class="mobile-icon">▣</span>
+        <span>Home</span>
+    </button>
+
+    <button data-page="schedule"
+            onclick="go('schedule')">
+        <span class="mobile-icon">▤</span>
+        <span>Schedule</span>
+    </button>
+
+    <button data-page="grades"
+            onclick="go('grades')">
+        <span class="mobile-icon">◆</span>
+        <span>Grades</span>
+    </button>
+
+    <button data-page="homework"
+            onclick="go('homework')">
+        <span class="mobile-icon">✓</span>
+        <span>Tasks</span>
+    </button>
+
+    <button data-page="settings"
+            onclick="go('settings')">
+        <span class="mobile-icon">⚙</span>
+        <span>More</span>
+    </button>
+
+</nav>
+
+
+<div id="modalRoot"></div>
+
+
+<script>
+
+/* ============================================================
+   DATA
+   ============================================================ */
+
+const state={
+    language:localStorage.getItem("smim-language")||"nl",
+    page:"overview",
+
+    history:[],
+    future:[],
+
+    search:"",
+
+    weekOffset:0,
+
+    scheduleFilter:"all",
+    homeworkFilter:"all",
+
+    collapsed:{},
+
+    compact:localStorage.getItem("smim-compact")==="true"
+};
+
+
+const subjects={
+    math:{
+        nl:"Wiskunde",
+        en:"Mathematics",
+        ru:"Математика"
+    },
+
+    dutch:{
+        nl:"Nederlands",
+        en:"Dutch",
+        ru:"Нидерландский"
+    },
+
+    english:{
+        nl:"Engels",
+        en:"English",
+        ru:"Английский"
+    },
+
+    ict:{
+        nl:"Informatica",
+        en:"Computer Science",
+        ru:"Информатика"
+    },
+
+    history:{
+        nl:"Geschiedenis",
+        en:"History",
+        ru:"История"
+    },
+
+    physics:{
+        nl:"Natuurkunde",
+        en:"Physics",
+        ru:"Физика"
+    },
+
+    biology:{
+        nl:"Biologie",
+        en:"Biology",
+        ru:"Биология"
+    }
+};
+
+
+const teachers=[
+    {
+        id:"de-vries",
+        name:"D. de Vries",
+        initials:"DV",
+        subject:"math",
+        room:"B204",
+        email:"teacher@example.invalid",
+
+        info:{
+            nl:"Wiskundedocent en mentor.",
+            en:"Mathematics teacher and mentor.",
+            ru:"Учитель математики и наставник."
+        }
+    },
+
+    {
+        id:"jansen",
+        name:"M. Jansen",
+        initials:"MJ",
+        subject:"dutch",
+        room:"A103",
+        email:"teacher2@example.invalid",
+
+        info:{
+            nl:"Docent Nederlands.",
+            en:"Dutch language teacher.",
+            ru:"Учитель нидерландского языка."
+        }
+    },
+
+    {
+        id:"smith",
+        name:"J. Smith",
+        initials:"JS",
+        subject:"english",
+        room:"C112",
+        email:"teacher3@example.invalid",
+
+        info:{
+            nl:"Docent Engels.",
+            en:"English teacher.",
+            ru:"Учитель английского языка."
+        }
+    },
+
+    {
+        id:"bakker",
+        name:"R. Bakker",
+        initials:"RB",
+        subject:"history",
+        room:"B110",
+        email:"teacher4@example.invalid",
+
+        info:{
+            nl:"Docent geschiedenis.",
+            en:"History teacher.",
+            ru:"Учитель истории."
+        }
+    }
+];
+
+
+const students=[
+    {
+        id:"me",
+        name:"Tijn",
+        initials:"TI",
+        role:"student",
+        class:"HAVO 1",
+        number:"S-001",
+        email:"student@example.invalid"
+    }
+];
+
+
+const lessons=[
+    {
+        id:"l1",
+        day:0,
+        start:"08:30",
+        end:"09:20",
+        subject:"math",
+        teacher:"de-vries",
+        room:"B204",
+        type:"normal",
+
+        info:{
+            nl:"Hoofdstuk 4 — Vergelijkingen.",
+            en:"Chapter 4 — Equations.",
+            ru:"Глава 4 — Уравнения."
+        },
+
+        homework:"h1"
+    },
+
+    {
+        id:"l2",
+        day:0,
+        start:"09:25",
+        end:"10:15",
+        subject:"dutch",
+        teacher:"jansen",
+        room:"A103",
+        type:"normal",
+
+        info:{
+            nl:"Leesvaardigheid en tekststructuur.",
+            en:"Reading comprehension and text structure.",
+            ru:"Чтение и структура текста."
+        },
+
+        homework:null
+    },
+
+    {
+        id:"l3",
+        day:0,
+        start:"10:30",
+        end:"11:20",
+        subject:"english",
+        teacher:"smith",
+        room:"C112",
+        type:"normal",
+
+        info:{
+            nl:"Vocabulary practice.",
+            en:"Vocabulary practice.",
+            ru:"Практика словарного запаса."
+        },
+
+        homework:"h2"
+    },
+
+    {
+        id:"l4",
+        day:1,
+        start:"08:30",
+        end:"09:20",
+        subject:"ict",
+        teacher:"smith",
+        room:"ICT1",
+        type:"practical",
+
+        info:{
+            nl:"HTML/CSS project.",
+            en:"HTML/CSS project.",
+            ru:"Проект HTML/CSS."
+        },
+
+        homework:"h3"
+    },
+
+    {
+        id:"l5",
+        day:1,
+        start:"09:25",
+        end:"10:15",
+        subject:"history",
+        teacher:"bakker",
+        room:"B110",
+        type:"normal",
+
+        info:{
+            nl:"De industriële revolutie.",
+            en:"The Industrial Revolution.",
+            ru:"Промышленная революция."
+        },
+
+        homework:null
+    },
+
+    {
+        id:"l6",
+        day:2,
+        start:"11:20",
+        end:"12:10",
+        subject:"physics",
+        teacher:"de-vries",
+        room:"B204",
+        type:"normal",
+
+        info:{
+            nl:"Kracht en beweging.",
+            en:"Force and motion.",
+            ru:"Сила и движение."
+        },
+
+        homework:"h4"
+    }
+];
+
+
+const grades=[
+    {
+        id:"g1",
+        subject:"math",
+        grade:8.4,
+        date:"2026-09-29",
+        weight:2,
+        average:7.8,
+        teacher:"de-vries",
+
+        description:{
+            nl:"Toets hoofdstuk 3",
+            en:"Chapter 3 test",
+            ru:"Тест по главе 3"
+        }
+    },
+
+    {
+        id:"g2",
+        subject:"english",
+        grade:7.8,
+        date:"2026-09-26",
+        weight:1,
+        average:7.5,
+        teacher:"smith",
+
+        description:{
+            nl:"Vocabulary test",
+            en:"Vocabulary test",
+            ru:"Тест словаря"
+        }
+    },
+
+    {
+        id:"g3",
+        subject:"history",
+        grade:6.2,
+        date:"2026-09-24",
+        weight:2,
+        average:6.8,
+        teacher:"bakker",
+
+        description:{
+            nl:"Bronanalyse",
+            en:"Source analysis",
+            ru:"Анализ источников"
+        }
+    },
+
+    {
+        id:"g4",
+        subject:"dutch",
+        grade:8.1,
+        date:"2026-09-22",
+        weight:1,
+        average:7.9,
+        teacher:"jansen",
+
+        description:{
+            nl:"Leesvaardigheid",
+            en:"Reading comprehension",
+            ru:"Чтение"
+        }
+    },
+
+    {
+        id:"g5",
+        subject:"biology",
+        grade:7.5,
+        date:"2026-09-19",
+        weight:1,
+        average:7.4,
+        teacher:"de-vries",
+
+        description:{
+            nl:"Practicum",
+            en:"Practical",
+            ru:"Практическая работа"
+        }
+    },
+
+    {
+        id:"g6",
+        subject:"physics",
+        grade:8.7,
+        date:"2026-09-17",
+        weight:2,
+        average:8.1,
+        teacher:"de-vries",
+
+        description:{
+            nl:"Kracht en beweging",
+            en:"Force and motion",
+            ru:"Сила и движение"
+        }
+    }
+];
+
+
+const homework=[
+    {
+        id:"h1",
+        subject:"math",
+
+        title:{
+            nl:"Opgaven 4.1 t/m 4.4",
+            en:"Exercises 4.1–4.4",
+            ru:"Задания 4.1–4.4"
+        },
+
+        date:"2026-10-07",
+        status:"open",
+
+        description:{
+            nl:"Maak de opdrachten uit paragraaf 4.1 t/m 4.4.",
+            en:"Complete exercises from sections 4.1–4.4.",
+            ru:"Выполнить задания из разделов 4.1–4.4."
+        }
+    },
+
+    {
+        id:"h2",
+        subject:"english",
+
+        title:{
+            nl:"Vocabulary Unit 5",
+            en:"Vocabulary Unit 5",
+            ru:"Слова: раздел 5"
+        },
+
+        date:"2026-10-08",
+        status:"open",
+
+        description:{
+            nl:"Leer de woorden van Unit 5.",
+            en:"Learn the vocabulary from Unit 5.",
+            ru:"Выучить слова из раздела 5."
+        }
+    },
+
+    {
+        id:"h3",
+        subject:"ict",
+
+        title:{
+            nl:"HTML-pagina afmaken",
+            en:"Finish HTML page",
+            ru:"Закончить HTML-страницу"
+        },
+
+        date:"2026-10-09",
+        status:"done",
+
+        description:{
+            nl:"Maak de navigatie en footer af.",
+            en:"Finish the navigation and footer.",
+            ru:"Закончить навигацию и footer."
+        }
+    },
+
+    {
+        id:"h4",
+        subject:"physics",
+
+        title:{
+            nl:"Samenvatting kracht",
+            en:"Force summary",
+            ru:"Конспект по силе"
+        },
+
+        date:"2026-10-10",
+        status:"open",
+
+        description:{
+            nl:"Maak een samenvatting van het hoofdstuk.",
+            en:"Make a summary of the chapter.",
+            ru:"Сделать конспект главы."
+        }
+    }
+];
+
+
+const tests=[
+    {
+        id:"t1",
+        subject:"math",
+
+        title:{
+            nl:"Toets Hoofdstuk 4",
+            en:"Chapter 4 Test",
+            ru:"Тест: глава 4"
+        },
+
+        date:"2026-10-13",
+        room:"B204",
+        teacher:"de-vries",
+        duration:"50 min",
+
+        material:{
+            nl:"Vergelijkingen, grafieken en formules.",
+            en:"Equations, graphs and formulas.",
+            ru:"Уравнения, графики и формулы."
+        }
+    },
+
+    {
+        id:"t2",
+        subject:"english",
+
+        title:{
+            nl:"Unit 5 Test",
+            en:"Unit 5 Test",
+            ru:"Тест: раздел 5"
+        },
+
+        date:"2026-10-15",
+        room:"C112",
+        teacher:"smith",
+        duration:"45 min",
+
+        material:{
+            nl:"Vocabulary + grammar.",
+            en:"Vocabulary + grammar.",
+            ru:"Слова + грамматика."
+        }
+    },
+
+    {
+        id:"t3",
+        subject:"history",
+
+        title:{
+            nl:"Industriële Revolutie",
+            en:"Industrial Revolution",
+            ru:"Промышленная революция"
+        },
+
+        date:"2026-10-20",
+        room:"B110",
+        teacher:"bakker",
+        duration:"50 min",
+
+        material:{
+            nl:"Hoofdstuk 2 en begrippenlijst.",
+            en:"Chapter 2 and key terms.",
+            ru:"Глава 2 и термины."
+        }
+    }
+];
+
+
+const messages=[
+    {
+        id:"m1",
+        sender:"de-vries",
+
+        title:{
+            nl:"Toets volgende week",
+            en:"Test next week",
+            ru:"Тест на следующей неделе"
+        },
+
+        date:"2026-10-06",
+        read:false,
+
+        body:{
+            nl:"Denk eraan dat de toets van hoofdstuk 4 volgende week dinsdag plaatsvindt.",
+            en:"Remember that the chapter 4 test takes place next Tuesday.",
+            ru:"Не забудьте, что тест по главе 4 состоится в следующий вторник."
+        }
+    },
+
+    {
+        id:"m2",
+        sender:"jansen",
+
+        title:{
+            nl:"Leesopdracht",
+            en:"Reading assignment",
+            ru:"Задание по чтению"
+        },
+
+        date:"2026-10-05",
+        read:true,
+
+        body:{
+            nl:"De leesopdracht staat inmiddels bij het huiswerk.",
+            en:"The reading assignment is now listed under homework.",
+            ru:"Задание по чтению теперь находится в разделе домашних заданий."
+        }
+    }
+];
+
+
+const documents=[
+    {
+        id:"d1",
+
+        name:{
+            nl:"Schoolgids 2026-2027",
+            en:"School guide 2026-2027",
+            ru:"Школьный справочник 2026-2027"
+        },
+
+        type:"PDF",
+        size:"2.4 MB"
+    },
+
+    {
+        id:"d2",
+
+        name:{
+            nl:"Roosterinformatie",
+            en:"Schedule information",
+            ru:"Информация о расписании"
+        },
+
+        type:"PDF",
+        size:"640 KB"
+    }
+];
+
+
+/* ============================================================
+   TRANSLATIONS
+   ============================================================ */
+
+const T={
+
+nl:{
+    overview:"Overzicht",
+    schedule:"Rooster",
+    grades:"Cijfers",
+    homework:"Huiswerk",
+    tests:"Toetsen",
+    attendance:"Aanwezigheid",
+    messages:"Berichten",
+    documents:"Documenten",
+    people:"Personen",
+    settings:"Instellingen",
+
+    main:"Hoofdmenu",
+    school:"School",
+    system:"Systeem",
+
+    today:"Vandaag",
+    open:"Open",
+    done:"Afgerond",
+    upcoming:"Aankomend",
+    average:"Gemiddelde",
+
+    subject:"Vak",
+    teacher:"Docent",
+    room:"Lokaal",
+    time:"Tijd",
+    date:"Datum",
+    status:"Status",
+
+    details:"Details",
+    close:"Sluiten",
+    back:"Terug",
+    view:"Bekijken",
+    search:"Zoeken",
+
+    all:"Alles",
+
+    lessonsToday:"Lessen vandaag",
+    openHomework:"Openstaand huiswerk",
+    upcomingTests:"Aankomende toetsen",
+    unreadMessages:"Ongelezen berichten",
+
+    recentGrades:"Recente cijfers",
+    todaySchedule:"Rooster vandaag",
+    recentHomework:"Recent huiswerk",
+    latestMessages:"Laatste berichten",
+    nextTests:"Volgende toetsen",
+
+    profile:"Profiel",
+    student:"Leerling",
+    class:"Klas",
+    studentNumber:"Leerlingnummer",
+    email:"E-mail",
+
+    description:"Beschrijving",
+    result:"Resultaat",
+    weight:"Weging",
+    material:"Leerstof",
+    duration:"Duur",
+    actions:"Acties",
+
+    read:"Gelezen",
+    unread:"Ongelezen",
+
+    markDone:"Markeer afgerond",
+    markOpen:"Markeer open",
+
+    noHomework:"Geen huiswerk.",
+    noMessages:"Geen berichten.",
+    noTests:"Geen toetsen.",
+    noLessons:"Geen lessen.",
+    noResults:"Geen resultaten gevonden.",
+
+    attendanceRate:"Aanwezigheidspercentage",
+    present:"Aanwezig",
+    late:"Te laat",
+    absent:"Afwezig",
+    excused:"Geoorloofd",
+
+    filters:"Filters",
+    type:"Type",
+    normal:"Normaal",
+    practical:"Praktijk",
+
+    week:"Week",
+    thisWeek:"Deze week",
+    weekBack:"← Vorige week",
+    weekForward:"Volgende week →",
+
+    language:"Taal",
+    languageDesc:"Wijzig de taal van de volledige interface.",
+
+    compact:"Compacte modus",
+    compactDesc:"Toon meer informatie per scherm.",
+
+    reset:"Instellingen resetten",
+    resetDesc:"Zet lokale SMIM-instellingen terug.",
+
+    teachers:"Docenten",
+    peopleTitle:"Docenten en andere personen",
+    documentsTitle:"Schooldocumenten",
+
+    settingsTitle:"Instellingen",
+    overviewDesc:"Schoolinformatie in één scherm."
+},
+
+en:{
+    overview:"Overview",
+    schedule:"Schedule",
+    grades:"Grades",
+    homework:"Homework",
+    tests:"Tests",
+    attendance:"Attendance",
+    messages:"Messages",
+    documents:"Documents",
+    people:"People",
+    settings:"Settings",
+
+    main:"Main",
+    school:"School",
+    system:"System",
+
+    today:"Today",
+    open:"Open",
+    done:"Completed",
+    upcoming:"Upcoming",
+    average:"Average",
+
+    subject:"Subject",
+    teacher:"Teacher",
+    room:"Room",
+    time:"Time",
+    date:"Date",
+    status:"Status",
+
+    details:"Details",
+    close:"Close",
+    back:"Back",
+    view:"View",
+    search:"Search",
+
+    all:"All",
+
+    lessonsToday:"Lessons today",
+    openHomework:"Open homework",
+    upcomingTests:"Upcoming tests",
+    unreadMessages:"Unread messages",
+
+    recentGrades:"Recent grades",
+    todaySchedule:"Today's schedule",
+    recentHomework:"Recent homework",
+    latestMessages:"Latest messages",
+    nextTests:"Next tests",
+
+    profile:"Profile",
+    student:"Student",
+    class:"Class",
+    studentNumber:"Student number",
+    email:"Email",
+
+    description:"Description",
+    result:"Result",
+    weight:"Weight",
+    material:"Material",
+    duration:"Duration",
+    actions:"Actions",
+
+    read:"Read",
+    unread:"Unread",
+
+    markDone:"Mark completed",
+    markOpen:"Mark open",
+
+    noHomework:"No homework.",
+    noMessages:"No messages.",
+    noTests:"No tests.",
+    noLessons:"No lessons.",
+    noResults:"No results found.",
+
+    attendanceRate:"Attendance rate",
+    present:"Present",
+    late:"Late",
+    absent:"Absent",
+    excused:"Excused",
+
+    filters:"Filters",
+    type:"Type",
+    normal:"Normal",
+    practical:"Practical",
+
+    week:"Week",
+    thisWeek:"This week",
+    weekBack:"← Previous week",
+    weekForward:"Next week →",
+
+    language:"Language",
+    languageDesc:"Change the language of the entire interface.",
+
+    compact:"Compact mode",
+    compactDesc:"Show more information on screen.",
+
+    reset:"Reset settings",
+    resetDesc:"Reset local SMIM settings.",
+
+    teachers:"Teachers",
+    peopleTitle:"Teachers and other people",
+    documentsTitle:"School documents",
+
+    settingsTitle:"Settings",
+    overviewDesc:"All school information in one screen."
+},
+
+ru:{
+    overview:"Обзор",
+    schedule:"Расписание",
+    grades:"Оценки",
+    homework:"Домашнее задание",
+    tests:"Тесты",
+    attendance:"Посещаемость",
+    messages:"Сообщения",
+    documents:"Документы",
+    people:"Люди",
+    settings:"Настройки",
+
+    main:"Главное",
+    school:"Школа",
+    system:"Система",
+
+    today:"Сегодня",
+    open:"Открыто",
+    done:"Завершено",
+    upcoming:"Предстоящее",
+    average:"Среднее",
+
+    subject:"Предмет",
+    teacher:"Учитель",
+    room:"Класс",
+    time:"Время",
+    date:"Дата",
+    status:"Статус",
+
+    details:"Подробности",
+    close:"Закрыть",
+    back:"Назад",
+    view:"Открыть",
+    search:"Поиск",
+
+    all:"Все",
+
+    lessonsToday:"Уроков сегодня",
+    openHomework:"Открытых заданий",
+    upcomingTests:"Предстоящих тестов",
+    unreadMessages:"Непрочитанных сообщений",
+
+    recentGrades:"Последние оценки",
+    todaySchedule:"Расписание на сегодня",
+    recentHomework:"Последние задания",
+    latestMessages:"Последние сообщения",
+    nextTests:"Следующие тесты",
+
+    profile:"Профиль",
+    student:"Ученик",
+    class:"Класс",
+    studentNumber:"Номер ученика",
+    email:"Электронная почта",
+
+    description:"Описание",
+    result:"Результат",
+    weight:"Вес",
+    material:"Материал",
+    duration:"Длительность",
+    actions:"Действия",
+
+    read:"Прочитано",
+    unread:"Не прочитано",
+
+    markDone:"Отметить выполненным",
+    markOpen:"Отметить открытым",
+
+    noHomework:"Нет заданий.",
+    noMessages:"Нет сообщений.",
+    noTests:"Нет тестов.",
+    noLessons:"Нет уроков.",
+    noResults:"Ничего не найдено.",
+
+    attendanceRate:"Посещаемость",
+    present:"Присутствовал",
+    late:"Опоздал",
+    absent:"Отсутствовал",
+    excused:"Уважительная причина",
+
+    filters:"Фильтры",
+    type:"Тип",
+    normal:"Обычный",
+    practical:"Практика",
+
+    week:"Неделя",
+    thisWeek:"Эта неделя",
+    weekBack:"← Предыдущая неделя",
+    weekForward:"Следующая неделя →",
+
+    language:"Язык",
+    languageDesc:"Изменить язык всего интерфейса.",
+
+    compact:"Компактный режим",
+    compactDesc:"Показывать больше информации на экране.",
+
+    reset:"Сбросить настройки",
+    resetDesc:"Сбросить локальные настройки SMIM.",
+
+    teachers:"Учителя",
+    peopleTitle:"Учителя и другие люди",
+    documentsTitle:"Школьные документы",
+
+    settingsTitle:"Настройки",
+    overviewDesc:"Вся школьная информация на одном экране."
+}
+
+};
+
+function tr(key){
+    return T[state.language]?.[key] || T.nl[key] || key;
+}
+
+function localized(obj){
+    if(typeof obj==="string") return obj;
+
+    return obj?.[state.language]
+        || obj?.nl
+        || "";
+}
+
+function subjectName(id){
+    return localized(subjects[id]||{nl:id});
+}
+
+function teacherById(id){
+    return teachers.find(t=>t.id===id);
+}
+
+function esc(value){
+    return String(value??"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+function formatDate(date){
+    return new Intl.DateTimeFormat(
+        state.language==="ru"
+            ?"ru-RU"
+            :state.language==="en"
+                ?"en-GB"
+                :"nl-NL",
+        {
+            day:"2-digit",
+            month:"2-digit",
+            year:"numeric"
+        }
+    ).format(new Date(date+"T12:00:00"));
+}
+
+function average(){
+    return (
+        grades.reduce((a,b)=>a+b.grade,0)
+        /grades.length
+    ).toFixed(2);
+}
+
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+
+function go(page){
+
+    if(state.page!==page){
+
+        state.history.push({
+            page:state.page
+        });
+
+        state.future=[];
+    }
+
+    state.page=page;
+
+    render();
+}
+
+function goBack(){
+
+    if(!state.history.length){
+        return;
+    }
+
+    state.future.push({
+        page:state.page
+    });
+
+    state.page=state.history.pop().page;
+
+    render();
+}
+
+function goForward(){
+
+    if(!state.future.length){
+        return;
+    }
+
+    state.history.push({
+        page:state.page
+    });
+
+    state.page=state.future.pop().page;
+
+    render();
+}
+
+function render(){
+
+    updateNavigation();
+
+    const pages={
+        overview:renderOverview,
+        schedule:renderSchedule,
+        grades:renderGrades,
+        homework:renderHomework,
+        tests:renderTests,
+        attendance:renderAttendance,
+        messages:renderMessages,
+        documents:renderDocuments,
+        people:renderPeople,
+        settings:renderSettings
+    };
+
+    const app=document.getElementById("app");
+
+    app.innerHTML=(pages[state.page]||renderOverview)();
+
+    document.body.classList.toggle(
+        "compact",
+        state.compact
+    );
+
+    const search=document.getElementById("globalSearch");
+
+    if(search){
+        search.value=state.search;
+    }
+}
+
+function updateNavigation(){
+
+    document.querySelectorAll(".nav-btn").forEach(btn=>{
+        btn.classList.toggle(
+            "active",
+            btn.dataset.page===state.page
+        );
+    });
+
+    document.querySelectorAll(".mobile-nav button").forEach(btn=>{
+        btn.classList.toggle(
+            "active",
+            btn.dataset.page===state.page
+        );
+    });
+}
+
+
+/* ============================================================
+   PANELS
+   ============================================================ */
+
+function panel(title,content,id){
+
+    const collapsed=!!state.collapsed[id];
+
+    return `
+        <section class="panel ${collapsed?"collapsed":""}">
+
+            <div class="panel-title">
+
+                <span>${esc(title)}</span>
+
+                <div class="panel-actions">
+
+                    <button
+                        onclick="togglePanel('${id}')"
+                        title="${collapsed?tr("view"):tr("close")}"
+                    >
+                        ${collapsed?"＋":"−"}
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="panel-body">
+                ${content}
+            </div>
+
+        </section>
+    `;
+}
+
+function togglePanel(id){
+
+    state.collapsed[id]=!state.collapsed[id];
+
+    render();
+}
+
+
+/* ============================================================
+   OVERVIEW
+   ============================================================ */
+
+function renderOverview(){
+
+    const unread=
+        messages.filter(m=>!m.read).length;
+
+    const openHomework=
+        homework.filter(h=>h.status==="open").length;
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+                <div class="page-title">
+                    ${tr("overview")}
+                </div>
+
+                <div class="page-subtitle">
+                    ${tr("overviewDesc")}
+                </div>
+            </div>
+
+            <div class="toolbar">
+
+                <button onclick="openStudentProfile()">
+                    ♟ ${tr("profile")}
+                </button>
+
+                <button onclick="go('settings')">
+                    ⚙
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="columns three">
+
+            ${stat(
+                tr("lessonsToday"),
+                lessons.length,
+                ""
+            )}
+
+            ${stat(
+                tr("openHomework"),
+                openHomework,
+                tr("open")
+            )}
+
+            ${stat(
+                tr("upcomingTests"),
+                tests.length,
+                ""
+            )}
+
+            ${stat(
+                tr("unreadMessages"),
+                unread,
+                tr("unread")
+            )}
+
+            ${stat(
+                tr("average"),
+                average(),
+                ""
+            )}
+
+            ${stat(
+                tr("attendanceRate"),
+                "96%",
+                ""
+            )}
+
+        </div>
+
+
+        <div class="columns">
+
+            ${panel(
+                tr("todaySchedule"),
+                scheduleMini(),
+                "overview-schedule"
+            )}
+
+            ${panel(
+                tr("recentGrades"),
+                gradesMini(),
+                "overview-grades"
+            )}
+
+        </div>
+
+
+        <div class="columns">
+
+            ${panel(
+                tr("recentHomework"),
+                homeworkMini(),
+                "overview-homework"
+            )}
+
+            ${panel(
+                tr("latestMessages"),
+                messagesMini(),
+                "overview-messages"
+            )}
+
+        </div>
+
+
+        ${panel(
+            tr("nextTests"),
+            testsMini(),
+            "overview-tests"
+        )}
+
+    `;
+}
+
+function stat(title,value,detail){
+
+    return `
+        <div class="stat">
+
+            <div class="stat-title">
+                ${esc(title)}
+            </div>
+
+            <div class="stat-value">
+                ${esc(value)}
+            </div>
+
+            <div class="stat-detail">
+                ${esc(detail)}
+            </div>
+
+        </div>
+    `;
+}
+
+function scheduleMini(){
+
+    return `
+        <div class="table-wrap">
+
+            <table>
+
+                <tr>
+                    <th>${tr("time")}</th>
+                    <th>${tr("subject")}</th>
+                    <th>${tr("teacher")}</th>
+                    <th>${tr("room")}</th>
+                </tr>
+
+                ${lessons.map(l=>{
+
+                    const teacher=teacherById(l.teacher);
+
+                    return `
+                        <tr>
+
+                            <td>
+                                ${l.start}–${l.end}
+                            </td>
+
+                            <td
+                                class="clickable"
+                                onclick="openLesson('${l.id}')"
+                            >
+                                <b>${subjectName(l.subject)}</b>
+                            </td>
+
+                            <td
+                                class="clickable"
+                                onclick="openTeacher('${teacher.id}')"
+                            >
+                                ${teacher.name}
+                            </td>
+
+                            <td>${l.room}</td>
+
+                        </tr>
+                    `;
+
+                }).join("")}
+
+            </table>
+
+        </div>
+    `;
+}
+
+function gradesMini(){
+
+    return `
+        <div class="table-wrap">
+
+            <table>
+
+                <tr>
+                    <th>${tr("subject")}</th>
+                    <th>${tr("result")}</th>
+                    <th>${tr("date")}</th>
+                </tr>
+
+                ${grades.slice(0,5).map(g=>`
+
+                    <tr
+                        class="clickable"
+                        onclick="openGrade('${g.id}')"
+                    >
+
+                        <td>
+                            ${subjectName(g.subject)}
+                        </td>
+
+                        <td
+                            class="grade ${gradeClass(g.grade)}"
+                        >
+                            ${g.grade.toFixed(1)}
+                        </td>
+
+                        <td>
+                            ${formatDate(g.date)}
+                        </td>
+
+                    </tr>
+
+                `).join("")}
+
+            </table>
+
+        </div>
+    `;
+}
+
+function homeworkMini(){
+
+    return `
+        <div class="table-wrap">
+
+            <table>
+
+                <tr>
+                    <th>${tr("subject")}</th>
+                    <th>${tr("description")}</th>
+                    <th>${tr("status")}</th>
+                </tr>
+
+                ${homework.map(h=>`
+
+                    <tr
+                        class="clickable"
+                        onclick="openHomework('${h.id}')"
+                    >
+
+                        <td>
+                            ${subjectName(h.subject)}
+                        </td>
+
+                        <td>
+                            ${esc(localized(h.title))}
+                        </td>
+
+                        <td>
+                            ${statusBadge(h.status)}
+                        </td>
+
+                    </tr>
+
+                `).join("")}
+
+            </table>
+
+        </div>
+    `;
+}
+
+function messagesMini(){
+
+    return `
+        <div class="table-wrap">
+
+            <table>
+
+                <tr>
+                    <th></th>
+                    <th>${tr("description")}</th>
+                    <th>${tr("date")}</th>
+                </tr>
+
+                ${messages.map(m=>{
+
+                    const teacher=teacherById(m.sender);
+
+                    return `
+
+                        <tr
+                            class="clickable"
+                            onclick="openMessage('${m.id}')"
+                        >
+
+                            <td>
+                                ${avatar(teacher)}
+                            </td>
+
+                            <td>
+
+                                <b>
+                                    ${esc(localized(m.title))}
+                                </b>
+
+                                <br>
+
+                                <span class="user-sub">
+                                    ${esc(localized(m.body))}
+                                </span>
+
+                            </td>
+
+                            <td>
+                                ${formatDate(m.date)}
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                }).join("")}
+
+            </table>
+
+        </div>
+    `;
+}
+
+function testsMini(){
+
+    return `
+        <div class="table-wrap">
+
+            <table>
+
+                <tr>
+                    <th>${tr("date")}</th>
+                    <th>${tr("subject")}</th>
+                    <th>${tr("description")}</th>
+                    <th>${tr("room")}</th>
+                </tr>
+
+                ${tests.map(t=>`
+
+                    <tr
+                        class="clickable"
+                        onclick="openTest('${t.id}')"
+                    >
+
+                        <td>
+                            ${formatDate(t.date)}
+                        </td>
+
+                        <td>
+                            ${subjectName(t.subject)}
+                        </td>
+
+                        <td>
+                            ${esc(localized(t.title))}
+                        </td>
+
+                        <td>
+                            ${t.room}
+                        </td>
+
+                    </tr>
+
+                `).join("")}
+
+            </table>
+
+        </div>
+    `;
+}
+
+
+/* ============================================================
+   SCHEDULE
+   ============================================================ */
+
+function renderSchedule(){
+
+    let list=lessons;
+
+    if(state.scheduleFilter!=="all"){
+        list=list.filter(
+            x=>x.type===state.scheduleFilter
+        );
+    }
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+                <div class="page-title">
+                    ${tr("schedule")}
+                </div>
+
+                <div class="page-subtitle">
+                    ${tr("week")}:
+                    ${
+                        state.weekOffset===0
+                            ?tr("thisWeek")
+                            :state.weekOffset
+                    }
+                </div>
+            </div>
+
+            <div class="toolbar">
+
+                <button onclick="changeWeek(-1)">
+                    ${tr("weekBack")}
+                </button>
+
+                <button onclick="resetWeek()">
+                    ${tr("today")}
+                </button>
+
+                <button onclick="changeWeek(1)">
+                    ${tr("weekForward")}
+                </button>
+
+                <select
+                    onchange="
+                        state.scheduleFilter=this.value;
+                        render()
+                    "
+                >
+
+                    <option value="all">
+                        ${tr("all")}
+                    </option>
+
+                    <option
+                        value="normal"
+                        ${state.scheduleFilter==="normal"?"selected":""}
+                    >
+                        ${tr("normal")}
+                    </option>
+
+                    <option
+                        value="practical"
+                        ${state.scheduleFilter==="practical"?"selected":""}
+                    >
+                        ${tr("practical")}
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        ${panel(
+            tr("schedule"),
+            `
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <tr>
+                        <th>#</th>
+                        <th>${tr("time")}</th>
+                        <th>${tr("subject")}</th>
+                        <th>${tr("teacher")}</th>
+                        <th>${tr("room")}</th>
+                        <th>${tr("type")}</th>
+                        <th>${tr("actions")}</th>
+                    </tr>
+
+                    ${list.map((l,i)=>{
+
+                        const teacher=
+                            teacherById(l.teacher);
+
+                        return `
+
+                            <tr>
+
+                                <td>${i+1}</td>
+
+                                <td>
+                                    <b>
+                                        ${l.start}–${l.end}
+                                    </b>
+                                </td>
+
+                                <td
+                                    class="clickable"
+                                    onclick="openLesson('${l.id}')"
+                                >
+                                    <b>
+                                        ${subjectName(l.subject)}
+                                    </b>
+                                </td>
+
+                                <td
+                                    class="clickable"
+                                    onclick="openTeacher('${teacher.id}')"
+                                >
+
+                                    <div class="user-cell">
+
+                                        ${avatar(teacher)}
+
+                                        <span>
+                                            ${teacher.name}
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    ${l.room}
+                                </td>
+
+                                <td>
+                                    ${
+                                        l.type==="practical"
+                                            ?tr("practical")
+                                            :tr("normal")
+                                    }
+                                </td>
+
+                                <td>
+
+                                    <button
+                                        onclick="openLesson('${l.id}')"
+                                    >
+                                        ${tr("view")}
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                        `;
+
+                    }).join("")}
+
+                </table>
+
+            </div>
+
+            `,
+            "schedule-main"
+        )}
+
+    `;
+}
+
+function changeWeek(amount){
+
+    state.weekOffset+=amount;
+
+    render();
+}
+
+function resetWeek(){
+
+    state.weekOffset=0;
+
+    render();
+}
+
+
+/* ============================================================
+   GRADES
+   ============================================================ */
+
+function renderGrades(){
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+
+                <div class="page-title">
+                    ${tr("grades")}
+                </div>
+
+                <div class="page-subtitle">
+                    ${tr("average")}:
+                    <b>${average()}</b>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        ${panel(
+            tr("grades"),
+            `
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <tr>
+                        <th>${tr("subject")}</th>
+                        <th>${tr("description")}</th>
+                        <th>${tr("result")}</th>
+                        <th>${tr("weight")}</th>
+                        <th>${tr("date")}</th>
+                        <th>${tr("average")}</th>
+                        <th>${tr("teacher")}</th>
+                    </tr>
+
+                    ${grades.map(g=>{
+
+                        const teacher=
+                            teacherById(g.teacher);
+
+                        return `
+
+                            <tr
+                                class="clickable"
+                                onclick="openGrade('${g.id}')"
+                            >
+
+                                <td>
+                                    <b>
+                                        ${subjectName(g.subject)}
+                                    </b>
+                                </td>
+
+                                <td>
+                                    ${esc(localized(g.description))}
+                                </td>
+
+                                <td
+                                    class="grade ${gradeClass(g.grade)}"
+                                >
+                                    ${g.grade.toFixed(1)}
+                                </td>
+
+                                <td>
+                                    ${g.weight}
+                                </td>
+
+                                <td>
+                                    ${formatDate(g.date)}
+                                </td>
+
+                                <td>
+                                    ${g.average.toFixed(1)}
+                                </td>
+
+                                <td>
+                                    ${teacher.name}
+                                </td>
+
+                            </tr>
+
+                        `;
+
+                    }).join("")}
+
+                </table>
+
+            </div>
+
+            `,
+            "grades-main"
+        )}
+
+    `;
+}
+
+function gradeClass(value){
+
+    if(value>=7.5)return "good";
+
+    if(value>=5.5)return "ok";
+
+    return "bad";
+}
+
+
+/* ============================================================
+   HOMEWORK
+   ============================================================ */
+
+function renderHomework(){
+
+    let list=homework;
+
+    if(state.homeworkFilter!=="all"){
+        list=list.filter(
+            h=>h.status===state.homeworkFilter
+        );
+    }
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+
+                <div class="page-title">
+                    ${tr("homework")}
+                </div>
+
+                <div class="page-subtitle">
+                    ${list.length}
+                </div>
+
+            </div>
+
+            <div class="toolbar">
+
+                <select
+                    onchange="
+                        state.homeworkFilter=this.value;
+                        render()
+                    "
+                >
+
+                    <option value="all">
+                        ${tr("all")}
+                    </option>
+
+                    <option
+                        value="open"
+                        ${state.homeworkFilter==="open"?"selected":""}
+                    >
+                        ${tr("open")}
+                    </option>
+
+                    <option
+                        value="done"
+                        ${state.homeworkFilter==="done"?"selected":""}
+                    >
+                        ${tr("done")}
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        ${panel(
+            tr("homework"),
+            `
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <tr>
+                        <th>${tr("subject")}</th>
+                        <th>${tr("description")}</th>
+                        <th>${tr("date")}</th>
+                        <th>${tr("status")}</th>
+                        <th>${tr("actions")}</th>
+                    </tr>
+
+                    ${list.map(h=>`
+
+                        <tr>
+
+                            <td>
+                                <b>
+                                    ${subjectName(h.subject)}
+                                </b>
+                            </td>
+
+                            <td
+                                class="clickable"
+                                onclick="openHomework('${h.id}')"
+                            >
+                                ${esc(localized(h.title))}
+                            </td>
+
+                            <td>
+                                ${formatDate(h.date)}
+                            </td>
+
+                            <td>
+                                ${statusBadge(h.status)}
+                            </td>
+
+                            <td>
+
+                                <button
+                                    onclick="toggleHomework('${h.id}')"
+                                >
+                                    ${
+                                        h.status==="done"
+                                            ?tr("markOpen")
+                                            :tr("markDone")
+                                    }
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    `).join("")}
+
+                </table>
+
+            </div>
+
+            `,
+            "homework-main"
+        )}
+
+    `;
+}
+
+function statusBadge(status){
+
+    return status==="done"
+
+        ?`<span class="badge green">
+            ${tr("done")}
+          </span>`
+
+        :`<span class="badge yellow">
+            ${tr("open")}
+          </span>`;
+}
+
+function toggleHomework(id){
+
+    const item=homework.find(
+        h=>h.id===id
+    );
+
+    if(!item)return;
+
+    item.status=
+        item.status==="done"
+            ?"open"
+            :"done";
+
+    render();
+}
+
+
+/* ============================================================
+   TESTS
+   ============================================================ */
+
+function renderTests(){
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+                <div class="page-title">
+                    ${tr("tests")}
+                </div>
+            </div>
+
+        </div>
+
+
+        ${panel(
+            tr("tests"),
+            `
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <tr>
+                        <th>${tr("date")}</th>
+                        <th>${tr("subject")}</th>
+                        <th>${tr("description")}</th>
+                        <th>${tr("teacher")}</th>
+                        <th>${tr("room")}</th>
+                        <th>${tr("duration")}</th>
+                    </tr>
+
+                    ${tests.map(t=>{
+
+                        const teacher=
+                            teacherById(t.teacher);
+
+                        return `
+
+                            <tr
+                                class="clickable"
+                                onclick="openTest('${t.id}')"
+                            >
+
+                                <td>
+                                    ${formatDate(t.date)}
+                                </td>
+
+                                <td>
+                                    <b>
+                                        ${subjectName(t.subject)}
+                                    </b>
+                                </td>
+
+                                <td>
+                                    ${esc(localized(t.title))}
+                                </td>
+
+                                <td>
+                                    ${teacher.name}
+                                </td>
+
+                                <td>
+                                    ${t.room}
+                                </td>
+
+                                <td>
+                                    ${t.duration}
+                                </td>
+
+                            </tr>
+
+                        `;
+
+                    }).join("")}
+
+                </table>
+
+            </div>
+
+            `,
+            "tests-main"
+        )}
+
+    `;
+}
+
+
+/* ============================================================
+   ATTENDANCE
+   ============================================================ */
+
+function renderAttendance(){
+
+    const records=[
+        ["2026-10-06","math","present"],
+        ["2026-10-06","dutch","present"],
+        ["2026-10-05","english","late"],
+        ["2026-10-03","ict","present"],
+        ["2026-10-02","history","present"],
+        ["2026-10-01","physics","excused"]
+    ];
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+                <div class="page-title">
+                    ${tr("attendance")}
+                </div>
+
+                <div class="page-subtitle">
+                    ${tr("attendanceRate")}: <b>96%</b>
+                </div>
+            </div>
+
+        </div>
+
+
+        ${panel(
+            tr("attendance"),
+            `
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <tr>
+                        <th>${tr("date")}</th>
+                        <th>${tr("subject")}</th>
+                        <th>${tr("status")}</th>
+                    </tr>
+
+                    ${records.map(r=>`
+
+                        <tr>
+
+                            <td>
+                                ${formatDate(r[0])}
+                            </td>
+
+                            <td>
+                                ${subjectName(r[1])}
+                            </td>
+
+                            <td>
+                                ${attendanceBadge(r[2])}
+                            </td>
+
+                        </tr>
+
+                    `).join("")}
+
+                </table>
+
+            </div>
+
+            `,
+            "attendance-main"
+        )}
+
+    `;
+}
+
+function attendanceBadge(status){
+
+    const map={
+        present:["green","present"],
+        late:["yellow","late"],
+        absent:["red","absent"],
+        excused:["blue","excused"]
+    };
+
+    const [cls,key]=map[status];
+
+    return `
+        <span class="badge ${cls}">
+            ${tr(key)}
+        </span>
+    `;
+}
+
+
+/* ============================================================
+   MESSAGES
+   ============================================================ */
+
+function renderMessages(){
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+
+                <div class="page-title">
+                    ${tr("messages")}
+                </div>
+
+                <div class="page-subtitle">
+                    ${
+                        messages.filter(
+                            m=>!m.read
+                        ).length
+                    }
+                </div>
+
+            </div>
+
+        </div>
+
+
+        ${panel(
+            tr("messages"),
+            `
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <tr>
+                        <th></th>
+                        <th>${tr("description")}</th>
+                        <th>${tr("date")}</th>
+                        <th>${tr("status")}</th>
+                    </tr>
+
+                    ${messages.map(m=>{
+
+                        const teacher=
+                            teacherById(m.sender);
+
+                        return `
+
+                            <tr
+                                class="clickable"
+                                onclick="openMessage('${m.id}')"
+                            >
+
+                                <td>
+                                    ${avatar(teacher)}
+                                </td>
+
+                                <td>
+
+                                    <b>
+                                        ${esc(localized(m.title))}
+                                    </b>
+
+                                    <br>
+
+                                    <span class="user-sub">
+                                        ${esc(localized(m.body))}
+                                    </span>
+
+                                </td>
+
+                                <td>
+                                    ${formatDate(m.date)}
+                                </td>
+
+                                <td>
+
+                                    ${
+                                        m.read
+
+                                        ?`<span class="badge green">
+                                            ${tr("read")}
+                                          </span>`
+
+                                        :`<span class="badge blue">
+                                            ${tr("unread")}
+                                          </span>`
+                                    }
+
+                                </td>
+
+                            </tr>
+
+                        `;
+
+                    }).join("")}
+
+                </table>
+
+            </div>
+
+            `,
+            "messages-main"
+        )}
+
+    `;
+}
+
+
+/* ============================================================
+   DOCUMENTS
+   ============================================================ */
+
+function renderDocuments(){
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+                <div class="page-title">
+                    ${tr("documents")}
+                </div>
+
+                <div class="page-subtitle">
+                    ${documents.length}
+                </div>
+            </div>
+
+        </div>
+
+
+        ${panel(
+            tr("documents"),
+            `
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <tr>
+                        <th>${tr("description")}</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th>${tr("actions")}</th>
+                    </tr>
+
+                    ${documents.map(d=>`
+
+                        <tr>
+
+                            <td>
+                                <b>
+                                    ${esc(localized(d.name))}
+                                </b>
+                            </td>
+
+                            <td>
+                                ${d.type}
+                            </td>
+
+                            <td>
+                                ${d.size}
+                            </td>
+
+                            <td>
+
+                                <button
+                                    onclick="openDocument('${d.id}')"
+                                >
+                                    ${tr("view")}
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    `).join("")}
+
+                </table>
+
+            </div>
+
+            `,
+            "documents-main"
+        )}
+
+    `;
+}
+
+
+/* ============================================================
+   PEOPLE
+   ============================================================ */
+
+function renderPeople(){
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+                <div class="page-title">
+                    ${tr("peopleTitle")}
+                </div>
+
+                <div class="page-subtitle">
+                    ${teachers.length}
+                </div>
+            </div>
+
+        </div>
+
+
+        ${panel(
+            tr("teachers"),
+            `
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <tr>
+                        <th></th>
+                        <th>${tr("teacher")}</th>
+                        <th>${tr("subject")}</th>
+                        <th>${tr("room")}</th>
+                        <th>${tr("email")}</th>
+                    </tr>
+
+                    ${teachers.map(t=>`
+
+                        <tr
+                            class="clickable"
+                            onclick="openTeacher('${t.id}')"
+                        >
+
+                            <td>
+                                ${avatar(t)}
+                            </td>
+
+                            <td>
+                                <b>${t.name}</b>
+                            </td>
+
+                            <td>
+                                ${subjectName(t.subject)}
+                            </td>
+
+                            <td>
+                                ${t.room}
+                            </td>
+
+                            <td>
+                                ${t.email}
+                            </td>
+
+                        </tr>
+
+                    `).join("")}
+
+                </table>
+
+            </div>
+
+            `,
+            "people-main"
+        )}
+
+    `;
+}
+
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+
+function renderSettings(){
+
+    return `
+
+        <div class="page-head">
+
+            <div>
+                <div class="page-title">
+                    ${tr("settings")}
+                </div>
+
+                <div class="page-subtitle">
+                    SMIM 0.2 beta
+                </div>
+            </div>
+
+        </div>
+
+
+        ${panel(
+            tr("settings"),
+            `
+
+            <div class="setting">
+
+                <div>
+
+                    <div class="setting-name">
+                        ${tr("language")}
+                    </div>
+
+                    <div class="setting-desc">
+                        ${tr("languageDesc")}
+                    </div>
+
+                </div>
+
+                <select onchange="changeLanguage(this.value)">
+
+                    <option
+                        value="nl"
+                        ${state.language==="nl"?"selected":""}
+                    >
+                        Nederlands
+                    </option>
+
+                    <option
+                        value="en"
+                        ${state.language==="en"?"selected":""}
+                    >
+                        English
+                    </option>
+
+                    <option
+                        value="ru"
+                        ${state.language==="ru"?"selected":""}
+                    >
+                        Русский
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="setting">
+
+                <div>
+
+                    <div class="setting-name">
+                        ${tr("compact")}
+                    </div>
+
+                    <div class="setting-desc">
+                        ${tr("compactDesc")}
+                    </div>
+
+                </div>
+
+                <input
+                    type="checkbox"
+                    ${state.compact?"checked":""}
+                    onchange="toggleCompact(this.checked)"
+                >
+
+            </div>
+
+
+            <div class="setting">
+
+                <div>
+
+                    <div class="setting-name">
+                        ${tr("reset")}
+                    </div>
+
+                    <div class="setting-desc">
+                        ${tr("resetDesc")}
+                    </div>
+
+                </div>
+
+                <button onclick="resetSettings()">
+                    ${tr("reset")}
+                </button>
+
+            </div>
+
+            `,
+            "settings-main"
+        )}
+
+
+        ${panel(
+            "SMIM",
+            `
+
+            <div class="detail-grid">
+
+                <div class="label">
+                    Name
+                </div>
+
+                <div>
+                    Sekond’s Modified Information Magister
+                </div>
+
+
+                <div class="label">
+                    Short name
+                </div>
+
+                <div>
+                    SMIM
+                </div>
+
+
+                <div class="label">
+                    Version
+                </div>
+
+                <div>
+                    0.2 beta
+                </div>
+
+
+                <div class="label">
+                    PWA
+                </div>
+
+                <div>
+                    Enabled
+                </div>
+
+            </div>
+
+            `,
+            "settings-about"
+        )}
+
+    `;
+}
+
+function changeLanguage(language){
+
+    state.language=language;
+
+    localStorage.setItem(
+        "smim-language",
+        language
+    );
+
+    render();
+}
+
+function toggleCompact(value){
+
+    state.compact=value;
+
+    localStorage.setItem(
+        "smim-compact",
+        value
+    );
+
+    render();
+}
+
+function resetSettings(){
+
+    localStorage.removeItem("smim-language");
+    localStorage.removeItem("smim-compact");
+
+    state.language="nl";
+    state.compact=false;
+
+    render();
+}
+
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+
+function handleSearch(value){
+
+    state.search=value.trim();
+
+    if(!state.search){
+
+        if(state.page==="search"){
+            state.page="overview";
+        }
+
+        render();
+
+        return;
+    }
+
+    renderSearch();
+}
+
+function renderSearch(){
+
+    const q=state.search.toLowerCase();
+
+    const results=[];
+
+    lessons.forEach(l=>{
+
+        const teacher=
+            teacherById(l.teacher);
+
+        const text=[
+            subjectName(l.subject),
+            teacher.name,
+            l.room,
+            localized(l.info)
+        ].join(" ").toLowerCase();
+
+        if(text.includes(q)){
+
+            results.push({
+                type:tr("schedule"),
+                title:subjectName(l.subject),
+                subtitle:
+                    `${l.start}–${l.end} · ${teacher.name}`,
+                action:
+                    `openLesson('${l.id}')`
+            });
+
+        }
+
+    });
+
+
+    grades.forEach(g=>{
+
+        const text=[
+            subjectName(g.subject),
+            localized(g.description),
+            g.grade
+        ].join(" ").toLowerCase();
+
+        if(text.includes(q)){
+
+            results.push({
+                type:tr("grades"),
+                title:
+                    `${subjectName(g.subject)} — ${g.grade.toFixed(1)}`,
+                subtitle:
+                    localized(g.description),
+                action:
+                    `openGrade('${g.id}')`
+            });
+
+        }
+
+    });
+
+
+    homework.forEach(h=>{
+
+        const text=[
+            subjectName(h.subject),
+            localized(h.title),
+            localized(h.description)
+        ].join(" ").toLowerCase();
+
+        if(text.includes(q)){
+
+            results.push({
+                type:tr("homework"),
+                title:localized(h.title),
+                subtitle:subjectName(h.subject),
+                action:
+                    `openHomework('${h.id}')`
+            });
+
+        }
+
+    });
+
+
+    tests.forEach(t=>{
+
+        const text=[
+            subjectName(t.subject),
+            localized(t.title),
+            localized(t.material)
+        ].join(" ").toLowerCase();
+
+        if(text.includes(q)){
+
+            results.push({
+                type:tr("tests"),
+                title:localized(t.title),
+                subtitle:
+                    `${subjectName(t.subject)} · ${formatDate(t.date)}`,
+                action:
+                    `openTest('${t.id}')`
+            });
+
+        }
+
+    });
+
+
+    messages.forEach(m=>{
+
+        const teacher=
+            teacherById(m.sender);
+
+        const text=[
+            teacher.name,
+            localized(m.title),
+            localized(m.body)
+        ].join(" ").toLowerCase();
+
+        if(text.includes(q)){
+
+            results.push({
+                type:tr("messages"),
+                title:localized(m.title),
+                subtitle:teacher.name,
+                action:
+                    `openMessage('${m.id}')`
+            });
+
+        }
+
+    });
+
+
+    teachers.forEach(t=>{
+
+        const text=[
+            t.name,
+            t.email,
+            subjectName(t.subject),
+            localized(t.info)
+        ].join(" ").toLowerCase();
+
+        if(text.includes(q)){
+
+            results.push({
+                type:tr("people"),
+                title:t.name,
+                subtitle:subjectName(t.subject),
+                action:
+                    `openTeacher('${t.id}')`
+            });
+
+        }
+
+    });
+
+
+    document.getElementById("app").innerHTML=`
+
+        <div class="page-head">
+
+            <div>
+
+                <div class="page-title">
+                    ${tr("search")}
+                </div>
+
+                <div class="page-subtitle">
+                    "${esc(state.search)}"
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="search-results">
+
+            ${
+                results.length
+
+                ?results.map(r=>`
+
+                    <div
+                        class="result"
+                        onclick="${r.action}"
+                    >
+
+                        <span class="badge blue">
+                            ${esc(r.type)}
+                        </span>
+
+                        <b>
+                            ${esc(r.title)}
+                        </b>
+
+                        <div class="user-sub">
+                            ${esc(r.subtitle)}
+                        </div>
+
+                    </div>
+
+                `).join("")
+
+                :`
+
+                    <div class="panel">
+
+                        <div class="panel-body">
+                            ${tr("noResults")}
+                        </div>
+
+                    </div>
+
+                `
+            }
+
+        </div>
+
+    `;
+}
+
+
+/* ============================================================
+   AVATARS
+   ============================================================ */
+
+function avatar(person,big=false){
+
+    if(!person)return "";
+
+    return `
+        <span class="pfp ${big?"big":""}">
+            ${esc(person.initials)}
+        </span>
+    `;
+}
+
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+
+function modal(title,body,footer=""){
+
+    document.getElementById("modalRoot").innerHTML=`
+
+        <div
+            class="modal-bg"
+            onclick="closeModal(event)"
+        >
+
+            <div
+                class="modal"
+                onclick="event.stopPropagation()"
+            >
+
+                <div class="modal-head">
+
+                    <span>
+                        ${esc(title)}
+                    </span>
+
+                    <button onclick="closeModal()">
+                        ✕
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+                    ${body}
+                </div>
+
+                ${
+                    footer
+                    ?`
+                        <div class="modal-foot">
+                            ${footer}
+                        </div>
+                    `
+                    :""
+                }
+
+            </div>
+
+        </div>
+    `;
+}
+
+function closeModal(event){
+
+    if(
+        event &&
+        event.target!==event.currentTarget
+    ){
+        return;
+    }
+
+    document.getElementById(
+        "modalRoot"
+    ).innerHTML="";
+}
+
+
+/* ============================================================
+   PROFILE
+   ============================================================ */
+
+function openStudentProfile(){
+
+    const student=students[0];
+
+    modal(
+        tr("profile"),
+
+        `
+
+        <div class="detail-header">
+
+            ${avatar(student,true)}
+
+            <div>
+
+                <h2>
+                    ${esc(student.name)}
+                </h2>
+
+                <p>
+                    ${tr("student")} ·
+                    ${esc(student.class)}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="detail-grid">
+
+            <div class="label">
+                ${tr("student")}
+            </div>
+
+            <div>
+                ${esc(student.name)}
+            </div>
+
+
+            <div class="label">
+                ${tr("class")}
+            </div>
+
+            <div>
+                ${esc(student.class)}
+            </div>
+
+
+            <div class="label">
+                ${tr("studentNumber")}
+            </div>
+
+            <div>
+                ${esc(student.number)}
+            </div>
+
+
+            <div class="label">
+                ${tr("email")}
+            </div>
+
+            <div>
+                ${esc(student.email)}
+            </div>
+
+
+            <div class="label">
+                ${tr("average")}
+            </div>
+
+            <div>
+                <b>${average()}</b>
+            </div>
+
+
+            <div class="label">
+                ${tr("attendanceRate")}
+            </div>
+
+            <div>
+                <b>96%</b>
+            </div>
+
+        </div>
+
+        `,
+
+        `
+            <button onclick="closeModal()">
+                ${tr("close")}
+            </button>
+        `
+    );
+}
+
+
+/* ============================================================
+   LESSON
+   ============================================================ */
+
+function openLesson(id){
+
+    const lesson=
+        lessons.find(x=>x.id===id);
+
+    if(!lesson)return;
+
+    const teacher=
+        teacherById(lesson.teacher);
+
+    const hw=
+        homework.find(
+            h=>h.id===lesson.homework
+        );
+
+    modal(
+
+        `${subjectName(lesson.subject)} — ${lesson.start}–${lesson.end}`,
+
+        `
+
+        <div class="detail-grid">
+
+            <div class="label">
+                ${tr("subject")}
+            </div>
+
+            <div>
+                ${subjectName(lesson.subject)}
+            </div>
+
+
+            <div class="label">
+                ${tr("time")}
+            </div>
+
+            <div>
+                ${lesson.start}–${lesson.end}
+            </div>
+
+
+            <div class="label">
+                ${tr("teacher")}
+            </div>
+
+            <div
+                class="clickable"
+                onclick="openTeacher('${teacher.id}')"
+            >
+                ${teacher.name}
+            </div>
+
+
+            <div class="label">
+                ${tr("room")}
+            </div>
+
+            <div>
+                ${lesson.room}
+            </div>
+
+
+            <div class="label">
+                ${tr("type")}
+            </div>
+
+            <div>
+                ${
+                    lesson.type==="practical"
+                    ?tr("practical")
+                    :tr("normal")
+                }
+            </div>
+
+
+            <div class="label">
+                ${tr("description")}
+            </div>
+
+            <div>
+                ${esc(localized(lesson.info))}
+            </div>
+
+
+            <div class="label">
+                ${tr("homework")}
+            </div>
+
+            <div>
+                ${
+                    hw
+                    ?esc(localized(hw.title))
+                    :tr("noHomework")
+                }
+            </div>
+
+        </div>
+
+        `,
+
+        `
+            <button onclick="closeModal()">
+                ${tr("close")}
+            </button>
+        `
+    );
+}
+
+
+/* ============================================================
+   GRADE
+   ============================================================ */
+
+function openGrade(id){
+
+    const grade=
+        grades.find(x=>x.id===id);
+
+    if(!grade)return;
+
+    const teacher=
+        teacherById(grade.teacher);
+
+    modal(
+
+        `${subjectName(grade.subject)} — ${grade.grade.toFixed(1)}`,
+
+        `
+
+        <div class="detail-grid">
+
+            <div class="label">
+                ${tr("subject")}
+            </div>
+
+            <div>
+                ${subjectName(grade.subject)}
+            </div>
+
+
+            <div class="label">
+                ${tr("result")}
+            </div>
+
+            <div
+                class="grade ${gradeClass(grade.grade)}"
+            >
+                ${grade.grade.toFixed(1)}
+            </div>
+
+
+            <div class="label">
+                ${tr("weight")}
+            </div>
+
+            <div>
+                ${grade.weight}
+            </div>
+
+
+            <div class="label">
+                ${tr("date")}
+            </div>
+
+            <div>
+                ${formatDate(grade.date)}
+            </div>
+
+
+            <div class="label">
+                ${tr("average")}
+            </div>
+
+            <div>
+                ${grade.average.toFixed(1)}
+            </div>
+
+
+            <div class="label">
+                ${tr("teacher")}
+            </div>
+
+            <div>
+                ${teacher.name}
+            </div>
+
+
+            <div class="label">
+                ${tr("description")}
+            </div>
+
+            <div>
+                ${esc(localized(grade.description))}
+            </div>
+
+        </div>
+
+        `,
+
+        `
+            <button onclick="closeModal()">
+                ${tr("close")}
+            </button>
+        `
+    );
+}
+
+
+/* ============================================================
+   HOMEWORK MODAL
+   ============================================================ */
+
+function openHomework(id){
+
+    const item=
+        homework.find(x=>x.id===id);
+
+    if(!item)return;
+
+    modal(
+
+        localized(item.title),
+
+        `
+
+        <div class="detail-grid">
+
+            <div class="label">
+                ${tr("subject")}
+            </div>
+
+            <div>
+                ${subjectName(item.subject)}
+            </div>
+
+
+            <div class="label">
+                ${tr("description")}
+            </div>
+
+            <div>
+                ${esc(localized(item.description))}
+            </div>
+
+
+            <div class="label">
+                ${tr("date")}
+            </div>
+
+            <div>
+                ${formatDate(item.date)}
+            </div>
+
+
+            <div class="label">
+                ${tr("status")}
+            </div>
+
+            <div>
+                ${statusBadge(item.status)}
+            </div>
+
+        </div>
+
+        `,
+
+        `
+
+            <button
+                onclick="
+                    toggleHomework('${item.id}');
+                    closeModal();
+                "
+            >
+                ${
+                    item.status==="done"
+                    ?tr("markOpen")
+                    :tr("markDone")
+                }
+            </button>
+
+            <button onclick="closeModal()">
+                ${tr("close")}
+            </button>
+
+        `
+    );
+}
+
+
+/* ============================================================
+   TEST MODAL
+   ============================================================ */
+
+function openTest(id){
+
+    const test=
+        tests.find(x=>x.id===id);
+
+    if(!test)return;
+
+    const teacher=
+        teacherById(test.teacher);
+
+    modal(
+
+        localized(test.title),
+
+        `
+
+        <div class="detail-grid">
+
+            <div class="label">
+                ${tr("subject")}
+            </div>
+
+            <div>
+                ${subjectName(test.subject)}
+            </div>
+
+
+            <div class="label">
+                ${tr("date")}
+            </div>
+
+            <div>
+                ${formatDate(test.date)}
+            </div>
+
+
+            <div class="label">
+                ${tr("teacher")}
+            </div>
+
+            <div>
+                ${teacher.name}
+            </div>
+
+
+            <div class="label">
+                ${tr("room")}
+            </div>
+
+            <div>
+                ${test.room}
+            </div>
+
+
+            <div class="label">
+                ${tr("duration")}
+            </div>
+
+            <div>
+                ${test.duration}
+            </div>
+
+
+            <div class="label">
+                ${tr("material")}
+            </div>
+
+            <div>
+                ${esc(localized(test.material))}
+            </div>
+
+        </div>
+
+        `,
+
+        `
+            <button onclick="closeModal()">
+                ${tr("close")}
+            </button>
+        `
+    );
+}
+
+
+/* ============================================================
+   MESSAGE MODAL
+   ============================================================ */
+
+function openMessage(id){
+
+    const message=
+        messages.find(x=>x.id===id);
+
+    if(!message)return;
+
+    const teacher=
+        teacherById(message.sender);
+
+    message.read=true;
+
+    modal(
+
+        localized(message.title),
+
+        `
+
+        <div class="detail-header">
+
+            ${avatar(teacher,true)}
+
+            <div>
+
+                <h2>
+                    ${esc(teacher.name)}
+                </h2>
+
+                <p>
+                    ${formatDate(message.date)}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="detail-grid">
+
+            <div class="label">
+                ${tr("teacher")}
+            </div>
+
+            <div>
+                ${teacher.name}
+            </div>
+
+
+            <div class="label">
+                ${tr("date")}
+            </div>
+
+            <div>
+                ${formatDate(message.date)}
+            </div>
+
+
+            <div class="label">
+                ${tr("description")}
+            </div>
+
+            <div>
+                ${esc(localized(message.body))}
+            </div>
+
+        </div>
+
+        `,
+
+        `
+            <button
+                onclick="
+                    closeModal();
+                    render();
+                "
+            >
+                ${tr("close")}
+            </button>
+        `
+    );
+}
+
+
+/* ============================================================
+   TEACHER
+   ============================================================ */
+
+function openTeacher(id){
+
+    const teacher=
+        teacherById(id);
+
+    if(!teacher)return;
+
+    const teacherLessons=
+        lessons.filter(
+            l=>l.teacher===id
+        );
+
+    const teacherGrades=
+        grades.filter(
+            g=>g.teacher===id
+        );
+
+    modal(
+
+        teacher.name,
+
+        `
+
+        <div class="detail-header">
+
+            ${avatar(teacher,true)}
+
+            <div>
+
+                <h2>
+                    ${esc(teacher.name)}
+                </h2>
+
+                <p>
+                    ${subjectName(teacher.subject)}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="detail-grid">
+
+            <div class="label">
+                ${tr("teacher")}
+            </div>
+
+            <div>
+                ${esc(teacher.name)}
+            </div>
+
+
+            <div class="label">
+                ${tr("subject")}
+            </div>
+
+            <div>
+                ${subjectName(teacher.subject)}
+            </div>
+
+
+            <div class="label">
+                ${tr("room")}
+            </div>
+
+            <div>
+                ${esc(teacher.room)}
+            </div>
+
+
+            <div class="label">
+                ${tr("email")}
+            </div>
+
+            <div>
+                ${esc(teacher.email)}
+            </div>
+
+
+            <div class="label">
+                Info
+            </div>
+
+            <div>
+                ${esc(localized(teacher.info))}
+            </div>
+
+
+            <div class="label">
+                ${tr("lessonsToday")}
+            </div>
+
+            <div>
+                ${teacherLessons.length}
+            </div>
+
+
+            <div class="label">
+                ${tr("grades")}
+            </div>
+
+            <div>
+                ${teacherGrades.length}
+            </div>
+
+        </div>
+
+        `,
+
+        `
+            <button onclick="closeModal()">
+                ${tr("close")}
+            </button>
+        `
+    );
+}
+
+
+/* ============================================================
+   DOCUMENT
+   ============================================================ */
+
+function openDocument(id){
+
+    const document=
+        documents.find(x=>x.id===id);
+
+    if(!document)return;
+
+    modal(
+
+        localized(document.name),
+
+        `
+
+        <div class="detail-grid">
+
+            <div class="label">
+                ${tr("description")}
+            </div>
+
+            <div>
+                ${esc(localized(document.name))}
+            </div>
+
+
+            <div class="label">
+                Type
+            </div>
+
+            <div>
+                ${document.type}
+            </div>
+
+
+            <div class="label">
+                Size
+            </div>
+
+            <div>
+                ${document.size}
+            </div>
+
+        </div>
+
+        <br>
+
+        <div class="badge blue">
+            Demo document — actual document loading
+            will be connected later.
+        </div>
+
+        `,
+
+        `
+            <button onclick="closeModal()">
+                ${tr("close")}
+            </button>
+        `
+    );
+}
+
+
+/* ============================================================
+   SERVICE WORKER
+   ============================================================ */
+
+if("serviceWorker" in navigator){
+
+    window.addEventListener(
+        "load",
+        ()=>{
+            navigator.serviceWorker.register("./sw.js")
+                .catch(error=>{
+                    console.warn(
+                        "SMIM service worker failed:",
+                        error
+                    );
+                });
+        }
+    );
+
+}
+
+
+/* ============================================================
+   KEYBOARD SHORTCUTS
+   ============================================================ */
+
+document.addEventListener(
+    "keydown",
+    event=>{
+
+        if(
+            event.key==="Escape" &&
+            document.getElementById("modalRoot").innerHTML
+        ){
+            closeModal();
+        }
+
+        if(
+            (event.ctrlKey || event.metaKey) &&
+            event.key.toLowerCase()==="k"
+        ){
+
+            event.preventDefault();
+
+            document.getElementById(
+                "globalSearch"
+            )?.focus();
+
+        }
+
+    }
+);
+
+
+/* ============================================================
+   START
+   ============================================================ */
+
+render();
+
+</script>
+
+</body>
+</html>
